@@ -41,7 +41,6 @@ function signUp(req, res){
                     });
                 }
             });
-           
 
         }
     }
@@ -161,11 +160,27 @@ function getAvatar(req, res){
 
 }
 
-function updateUser(req, res ){
-    const userData = req.body;
+async function updateUser(req, res ){
+    let userData = req.body;
+    userData.email = req.body.email.toLowerCase();
     const params = req.params;
+    const saltRounds = 10;
+
+    if (userData.password) {
+        await bcrypt.hash(userData.password, saltRounds, function(err, hash)  {
+            if (err) {
+                res.status(500).send({ message: "Error al encriptar la contraseña." });
+            } else {
+                userData.password = hash;
+                console.log("1");
+            }
+        });
+    }
 
     User.findOneAndUpdate({_id: params.id}, userData, (err, userUpdate) => {
+        console.log("2");
+        console.log('el valor de userData.password es: '+userData.password);
+        
         if(err){
             res.status(500).send({message: "Error del servidor"});
         } else {
